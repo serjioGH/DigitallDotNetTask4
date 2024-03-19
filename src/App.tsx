@@ -1,24 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
+import FetchComponent from './FetchComponents';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ClothDetailPage from './ClothDetailsPage';
+import CreateCloth from './CreateCloth';
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     <Router>
+      <Routes>
+        <Route path="/" element={<FetchComponent />}/>
+        <Route path="/cloths/:clothId" element={<ClothDetailPage />} />
+        <Route path="/new-cloth" element={<CreateCloth/>} />
+      </Routes>
+    </Router>
     </div>
   );
 }
