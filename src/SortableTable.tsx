@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClothSize, ClothGroup, Cloth } from './types';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaTrash, FaEdit } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
-const SortableTable: React.FC<{ data: Cloth[] }> = ({ data }) => {
+const SortableTable: React.FC<{ data: Cloth[] }> = ({ data: initialData }) => {
+  const [data, setData] = useState<Cloth[]>(initialData);
   const [filter, setFilter] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -20,12 +27,49 @@ const SortableTable: React.FC<{ data: Cloth[] }> = ({ data }) => {
   const handleAddNewCloth = () => {
     navigate('/new-cloth'); // Navigate to the NewClothForm component
   }
+
+  const handleEditCloth = (id: string) => {
+    navigate(`/edit-cloth/${id}`);
+  };
+
+  const handleDeleteCloth = (id: string) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will not be able to recover this cloth!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, cancel!',
+      reverseButtons: true
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`https://localhost:44326/api/Cloths/${id}`, {
+            method: 'DELETE',
+          });
+  
+          if (!response.ok) {
+            throw new Error('Failed to delete cloth');
+          }
+  
+          setData(prevData => prevData.filter(cloth => cloth.id !== id));
+          Swal.fire('Deleted!', 'Your cloth has been deleted.', 'success');
+        } catch (error) {
+          console.error('An error occurred while deleting cloth:', error);
+          Swal.fire('Failed to delete cloth', 'Please try again.', 'error');
+        }
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire('Cancelled', 'Your cloth is safe :)', 'info');
+      }
+    });
+  };
+  
   const filteredCloths = data.filter((cloth) =>
-  cloth.title.toLowerCase().includes(filter.toLowerCase()) ||
-  cloth.brand.toLowerCase().includes(filter.toLowerCase()) ||
-  cloth.sizes.some((size) => size.size.toLowerCase().includes(filter.toLowerCase())) ||
-  cloth.groups.some((group) => group.group.toLowerCase().includes(filter.toLowerCase()))
-);
+    cloth.title.toLowerCase().includes(filter.toLowerCase()) ||
+    cloth.brand.toLowerCase().includes(filter.toLowerCase()) ||
+    cloth.sizes.some((size) => size.size.toLowerCase().includes(filter.toLowerCase())) ||
+    cloth.groups.some((group) => group.group.toLowerCase().includes(filter.toLowerCase()))
+  );
 
   let sortedCloths = [...filteredCloths];
 
@@ -60,6 +104,7 @@ const SortableTable: React.FC<{ data: Cloth[] }> = ({ data }) => {
             <th>Brand</th>
             <th>Sizes</th>
             <th>Groups</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -81,6 +126,14 @@ const SortableTable: React.FC<{ data: Cloth[] }> = ({ data }) => {
                     <li key={group.groupId}>{group.group}</li>
                   ))}
                 </ul>
+              </td>
+              <td>
+                {/* Icons for delete and edit functionalities */}
+                <Link to={`/edit-cloth/${cloth.id}`}>
+                <FaEdit style={{ cursor: 'pointer', marginRight: '0.5rem' }}  />
+                </Link>
+               
+                <FaTrash style={{ cursor: 'pointer' }} onClick={() => handleDeleteCloth(cloth.id)} />
               </td>
             </tr>
           ))}

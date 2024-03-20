@@ -1,82 +1,108 @@
-import React, { useState } from 'react';
-import sizesAndGroupsData from './sizesAndGroups.json';
+import React, { useState, useEffect } from 'react';
 import { ClothSize, ClothGroup } from './types';
-import { Link, useNavigate } from 'react-router-dom';
+import sizesAndGroupsData from './sizesAndGroups.json';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { validateTitle, validatePrice, validateBrandId, validateDescription, validateSizes, validateGroups } from './validation';
 
-const CreateCloth: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [price, setPrice] = useState('');
-  const [brandId, setBrandId] = useState('');
-  const [description, setDescription] = useState('');
-  const [sizes, setSizes] = useState<ClothSize[]>([]);
-  const [groups, setGroups] = useState<ClothGroup[]>([]);
-  const brands: { brandId: string; brand: string }[] = sizesAndGroupsData.brands;
-  const navigate = useNavigate();
-  const apiUrl = 'https://localhost:44326/api/Cloths';
-
-  // Validation functions
-  const [errors, setErrors] = useState({
-    title: '',
-    price: '',
-    brandId: '',
-    description: '',
-    sizes: '',
-    groups: '',
-  });
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const titleError = validateTitle(title);
-    const priceError = validatePrice(price);
-    const brandIdError = validateBrandId(brandId);
-    const descriptionError = validateDescription(description);
-    const sizesError = validateSizes(sizes);
-    const groupsError = validateGroups(groups);
-    setErrors({
-      title: titleError,
-      price: priceError,
-      brandId: brandIdError,
-      description: descriptionError,
-      sizes: sizesError,
-      groups: groupsError
-    });
-
-    if (!titleError && !priceError && !brandIdError && !descriptionError && !sizesError && !groupsError)
-    {
-      try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ title, price, brandId, description, sizes, groups }),
-        });
-        if (!response.ok) {
-          throw new Error('Failed to create cloth');
-        }
+const UpdateCloth: React.FC = () => {
+    const { clothId } = useParams<{ clothId: string }>();
+    const [cloth, setCloth] = useState<any>(null);
+    const [title, setTitle] = useState('');
+    const [price, setPrice] = useState('');
+    const [brandId, setBrandId] = useState('');
+    const [description, setDescription] = useState('');
+    const [sizes, setSizes] = useState<ClothSize[]>([]);
+    const [groups, setGroups] = useState<ClothGroup[]>([]);
+    const brands: { brandId: string; brand: string }[] = sizesAndGroupsData.brands;
+    const navigate = useNavigate();
+    const apiUrl = `https://localhost:44326/api/Cloths/${clothId}`;
   
-        console.log('Cloth created successfully');
-        setTitle('');
-        setPrice('');
-        setBrandId('');
-        setDescription('');
-        navigate('/');
-      } catch (error: any) {
-        if (error instanceof Error) {
-          // Handle error
-          console.error('An error occurred:', error.message);
-          Swal.fire('Failed to create cloth', 'Please try again.', 'error');
+    useEffect(() => {
+      // Fetch cloth data using clothId and populate the state
+      const fetchClothData = async () => {
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error('Failed to fetch cloth data');
+          }
+          const data = await response.json();
+          setCloth(data);
+          setTitle(data.title);
+          setPrice(data.price.toString());
+          setBrandId(data.brandId);
+          setDescription(data.description);
+          setSizes(data.sizes);
+          setGroups(data.groups);
+        } catch (error) {
+          console.error('An error occurred while fetching cloth data:', error);
+        }
+      };
+  
+      fetchClothData();
+    }, [apiUrl, clothId]);
+  
+    // Validation functions
+    const [errors, setErrors] = useState({
+      title: '',
+      price: '',
+      brandId: '',
+      description: '',
+      sizes: '',
+      groups: '',
+    });
+  
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const filteredSizes = sizes.filter((size) => size.quantityInStock > 0);
+      const titleError = validateTitle(title);
+      const priceError = validatePrice(price);
+      const brandIdError = validateBrandId(brandId);
+      const descriptionError = validateDescription(description);
+      const sizesError = validateSizes(filteredSizes);
+      const groupsError = validateGroups(groups);
+  
+      setErrors({
+        title: titleError,
+        price: priceError,
+        brandId: brandIdError,
+        description: descriptionError,
+        sizes: sizesError,
+        groups: groupsError,
+      });
+  
+      // Check if there are any validation errors
+      if (!titleError && !priceError && !brandIdError && !descriptionError && !sizesError && !groupsError) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title, price, brandId, description, sizes : filteredSizes, groups }),
+          });
+          if (!response.ok) {
+            throw new Error('Failed to update cloth');
+          }
+  
+          console.log('Cloth updated successfully');
+          navigate('/');
+        } catch (error: any) {
+          if (error instanceof Error) {
+            // Handle error
+            console.error('An error occurred:', error.message);
+            Swal.fire('Failed to update cloth', 'Please try again.', 'error');
+          }
         }
       }
-    }
-  };
+    };
+  
 
+  // Similar JSX structure as CreateCloth component
   return (
     <div className="container mt-5">
       <div className="card">
-        <h2 className="card-header">Add New Cloth</h2>
+        <h2 className="card-header">Edit Cloth</h2>
         <div className="card-body">
           <Link to="/" className="btn btn-primary mb-3">
             Back
@@ -225,4 +251,4 @@ const CreateCloth: React.FC = () => {
   );
 };
 
-export default CreateCloth;
+export default UpdateCloth;
