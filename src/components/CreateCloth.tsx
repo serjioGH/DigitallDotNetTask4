@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import sizesAndGroupsData from './sizesAndGroups.json';
-import { ClothSize, ClothGroup } from './types';
+import sizesAndGroupsData from '../common/sizesAndGroups.json';
+import { ClothSize, ClothGroup } from '../common/types';
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { validateTitle, validatePrice, validateBrandId, validateDescription, validateSizes, validateGroups } from './validation';
+import { validateTitle, validatePrice, validateBrandId, validateDescription, validateSizes, validateGroups } from '../common/validation';
 
 const CreateCloth: React.FC = () => {
   const [title, setTitle] = useState('');

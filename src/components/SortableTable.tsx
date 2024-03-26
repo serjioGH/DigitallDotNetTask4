@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClothSize, ClothGroup, Cloth } from './types';
+import { ClothSize, ClothGroup, Cloth } from '../common/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 import Swal from 'sweetalert2';

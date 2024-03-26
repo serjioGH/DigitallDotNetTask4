@@ -38,3 +38,8 @@ ul {
   outline: none;
   border-color: #007bff; /* Change border color when input is focused */
 }
+
+.nav-link.active {
+  color: #fff; /* Color for active links */
+  background-color: #ffffff; /* Background color for active links */
+}

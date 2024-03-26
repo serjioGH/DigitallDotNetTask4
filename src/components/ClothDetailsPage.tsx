@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import useFetch from 'react-fetch-hook';
-import { Cloth } from './types';
+import { Cloth } from '../common/types';
 
 const ClothDetailPage: React.FC = () => {
   const { clothId } = useParams<{ clothId: string }>();

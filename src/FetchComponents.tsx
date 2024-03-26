@@ -1,7 +1,7 @@
 import React from 'react';
 import useFetch from 'react-fetch-hook';
-import SortableTable from './SortableTable';
-import { Cloth } from './types';
+import SortableTable from './components/SortableTable';
+import { Cloth } from './common/types';
 
 interface Response {
   filter: Filter;
